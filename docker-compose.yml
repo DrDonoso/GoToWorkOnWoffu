@@ -1,0 +1,12 @@
+version: "3.6"
+services:
+  gotoworkonwoffu:
+    image: gotoworkonwoffu:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: ${WOFFU}Dockerfile
+      args:
+        main: ${WOFFU}
+    environment:
+      AuthToken: ${AuthToken}
+      UserId: ${UserId}
