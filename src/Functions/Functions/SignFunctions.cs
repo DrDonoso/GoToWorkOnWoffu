@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Functions.Configuration;
 using Functions.Models;
 using Newtonsoft.Json;
 
@@ -22,6 +23,7 @@ namespace Functions.Functions
 
         public SignFunctions(IConfiguration configuration, IWoffuToken woffuToken)
         {
+            
             _configuration = configuration;
             _woffuToken = woffuToken;
             _user = _configuration["user"];
@@ -30,14 +32,14 @@ namespace Functions.Functions
         }
 
         [FunctionName("SignIn")]
-        public async Task SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log)
+        public async Task SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             var userId = _woffuToken.GetTokenToString(JsonConvert.DeserializeObject<JwtModel>(_token)).UserId;
             await SignService.Sign(_token, Convert.ToInt32(userId));
         }
 
         [FunctionName("SignOut")]
-        public async Task SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log)
+        public async Task SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             var userId = _woffuToken.GetTokenToString(JsonConvert.DeserializeObject<JwtModel>(_token)).UserId;
             await SignService.Sign(_token, Convert.ToInt32(userId));
