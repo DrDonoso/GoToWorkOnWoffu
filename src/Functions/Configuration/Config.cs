@@ -12,6 +12,7 @@ namespace Functions.Configuration
         {
             var services = builder.Services;
             services.AddScoped<IWoffuToken, WoffuToken>();
+            services.AddSingleton<IWoffuServices, WoffuServices>();
         }
     }
 }
