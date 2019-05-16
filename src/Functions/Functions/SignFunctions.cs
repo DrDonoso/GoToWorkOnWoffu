@@ -28,25 +28,25 @@ namespace Functions.Functions
         }
 
         [FunctionName("SignIn")]
-        public async Task SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public void SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             if (!_woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token))
             {
-                await _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
+                _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
             }
         }
 
         [FunctionName("SignOut")]
-        public async Task SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public void SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             if (!_woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token))
             {
-                await _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
+                 _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
             }
         }
 
         [FunctionName("IsHolidayPost")]
-        public async Task IsHolidayPost([HttpTrigger(AuthorizationLevel.Function, "get")]HttpRequest req, ILogger log, ExecutionContext context)
+        public void IsHolidayPost([HttpTrigger(AuthorizationLevel.Function, "get")]HttpRequest req, ILogger log, ExecutionContext context)
         {
             var result = _woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token);
         }
