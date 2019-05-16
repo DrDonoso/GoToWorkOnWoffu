@@ -7,7 +7,7 @@ Create secrets file in root and add this keys:
 ***User*** -> Your user  
 ***Password*** -> Your password
 
-local.settings.json
+local.settings.json => 
   "Values": {
     "User": "User",
     "Password": "Password"
