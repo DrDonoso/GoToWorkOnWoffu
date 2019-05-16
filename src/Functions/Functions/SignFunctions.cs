@@ -46,17 +46,8 @@ namespace Functions.Functions
         [FunctionName("IsHolidayPost")]
         public async Task IsHolidayPost([HttpTrigger(AuthorizationLevel.Function, "get")]HttpRequest req, ILogger log, ExecutionContext context)
         {
-
-            //var _configuration = new ConfigurationBuilder()
-            //    .SetBasePath(context.FunctionAppDirectory)
-            //    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-            //    .AddEnvironmentVariables()
-            //    .Build();
-
-            var authKey = _configuration["AuthToken"];
-            var userId = _configuration["UserId"];
-
-            var response = await DayService.IsHoliday(authKey, Convert.ToInt32(userId));
+            var userId = _woffuToken.GetTokenToString(JsonConvert.DeserializeObject<JwtModel>(_token)).UserId;
+            var response = await DayService.IsHoliday(_token, Convert.ToInt32(userId));
             Console.WriteLine(response);
         }
     }
