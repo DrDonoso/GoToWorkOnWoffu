@@ -1,10 +1,11 @@
-using Functions.Service;
+using Functions.Models;
 using Functions.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
 
@@ -12,46 +13,54 @@ namespace Functions.Functions
 {
     public class SignFunctions
     {
-        private readonly IConfiguration _configuration;
+        private IConfiguration _configuration;
+        private IWoffuToken _woffuToken;
+        private IWoffuServices _woffuServices;
+        private string _user;
+        private string _password;
+        private string _token;
+        private JwtModel _jwtToken;
+        private BearerModel _bearer;
 
-        public SignFunctions(IConfiguration configuration)
+        public SignFunctions(IConfiguration configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
         {
-            _configuration = configuration;
+            SetUp(configuration, woffuToken, woffuServices);
         }
 
         [FunctionName("SignIn")]
-        public async Task SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log)
+        public void SignIn([TimerTrigger("0 0 9 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
-            var authKey = _configuration["AuthToken"];
-            var userId = _configuration["UserId"];
-
-            await SignService.Sign(authKey, Convert.ToInt32(userId));
+            if (!_woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token))
+            {
+                _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
+            }
         }
 
         [FunctionName("SignOut")]
-        public async Task SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log)
+        public void SignOut([TimerTrigger("0 30 18 * * MON-FRI")]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
-            var authKey = _configuration["AuthToken"];
-            var userId = _configuration["UserId"];
-
-            await SignService.Sign(authKey, Convert.ToInt32(userId));
+            if (!_woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token))
+            {
+                 _woffuServices.Sign(Convert.ToInt32(_bearer.UserId), _jwtToken.access_token);
+            }
         }
 
         [FunctionName("IsHolidayPost")]
-        public async Task IsHolidayPost([HttpTrigger(AuthorizationLevel.Function, "get")]HttpRequest req, ILogger log, ExecutionContext context)
+        public void IsHolidayPost([HttpTrigger(AuthorizationLevel.Function, "get")]HttpRequest req, ILogger log, ExecutionContext context)
         {
+            var result = _woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token);
+        }
 
-            //var _configuration = new ConfigurationBuilder()
-            //    .SetBasePath(context.FunctionAppDirectory)
-            //    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-            //    .AddEnvironmentVariables()
-            //    .Build();
-
-            var authKey = _configuration["AuthToken"];
-            var userId = _configuration["UserId"];
-
-            var response = await DayService.IsHoliday(authKey, Convert.ToInt32(userId));
-            Console.WriteLine(response);
+        private void SetUp(IConfiguration configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
+        {
+            _configuration = configuration;
+            _woffuToken = woffuToken;
+            _woffuServices = woffuServices;
+            _user = _configuration["user"];
+            _password = _configuration["password"];
+            _token = _woffuToken.GetToken(_user, _password);
+            _jwtToken = JsonConvert.DeserializeObject<JwtModel>(_token);
+            _bearer = _woffuToken.GetTokenToString(JsonConvert.DeserializeObject<JwtModel>(_token));
         }
     }
 }
