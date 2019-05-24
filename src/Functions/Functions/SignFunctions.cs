@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
+using Functions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Functions.Functions
 {
     public class SignFunctions
     {
-        private IConfiguration _configuration;
+        private TokenOptions _configuration;
         private IWoffuToken _woffuToken;
         private IWoffuServices _woffuServices;
         private string _user;
@@ -22,9 +24,9 @@ namespace Functions.Functions
         private JwtModel _jwtToken;
         private BearerModel _bearer;
 
-        public SignFunctions(IConfiguration configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
+        public SignFunctions(IOptions<TokenOptions> configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
         {
-            SetUp(configuration, woffuToken, woffuServices);
+            SetUp(configuration.Value, woffuToken, woffuServices);
         }
 
         [FunctionName("SignIn")]
@@ -51,13 +53,13 @@ namespace Functions.Functions
             var result = _woffuServices.IsHoliday(_bearer.UserId, _jwtToken.access_token);
         }
 
-        private void SetUp(IConfiguration configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
+        private void SetUp(TokenOptions configuration, IWoffuToken woffuToken, IWoffuServices woffuServices)
         {
             _configuration = configuration;
             _woffuToken = woffuToken;
             _woffuServices = woffuServices;
-            _user = _configuration["user"];
-            _password = _configuration["password"];
+            _user = configuration.User;
+            _password = configuration.Password;
             _token = _woffuToken.GetToken(_user, _password);
             _jwtToken = JsonConvert.DeserializeObject<JwtModel>(_token);
             _bearer = _woffuToken.GetTokenToString(JsonConvert.DeserializeObject<JwtModel>(_token));
