@@ -2,7 +2,6 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 
 [assembly: FunctionsStartup(typeof(Functions.Configuration.Config))]
@@ -21,8 +20,6 @@ namespace Functions.Configuration
 
             services.AddScoped<IWoffuToken, WoffuToken>();
             services.AddScoped<IWoffuServices, WoffuServices>();
-            //services.AddSingleton<IConfiguration>();
-
             services.Configure<TokenOptions>(config);
         }
     }
