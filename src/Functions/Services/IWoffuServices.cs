@@ -34,5 +34,15 @@ namespace Functions.Services
 
             return JsonConvert.DeserializeObject<IEnumerable<DayInfo>>(response.Content).Any(x => x.StartDate.Date == DateTime.Today.Date);
         }
+
+        public bool IsBankHoliday(string bearer)
+        {
+            var client = new RestClient($"https://plainconcepts.woffu.com/api/users/requests?pageSize=50&statusId=20");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("Authorization", $"Bearer {bearer}");
+            IRestResponse response = client.Execute(request);
+
+            return JsonConvert.DeserializeObject<IEnumerable<DayInfo>>(response.Content).Any(x => x.StartDate.Date == DateTime.Today.Date);
+        }
     }
 }

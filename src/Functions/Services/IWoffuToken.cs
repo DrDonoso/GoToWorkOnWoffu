@@ -1,10 +1,11 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using Functions.Configuration;
 using Functions.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RestSharp;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Functions.Services
 {
@@ -16,18 +17,18 @@ namespace Functions.Services
 
     public class WoffuToken : IWoffuToken
     {
-        private readonly IConfiguration _configuration;
+        private readonly TokenOptions _configuration;
 
-        public WoffuToken(IConfiguration configuration)
+        public WoffuToken(IOptions<TokenOptions> configuration)
         {
-            _configuration = configuration;
+            _configuration = configuration.Value;
         }
 
         public string GetToken(string user, string password)
         {
             var client = new RestClient($"https://app.woffu.com/Token");
             var request = new RestRequest(Method.POST);
-            request.AddParameter("undefined", $"grant_type=password&username={_configuration["user"]}&password={_configuration["password"]}", ParameterType.RequestBody);
+            request.AddParameter("undefined", $"grant_type=password&username={_configuration.User}&password={_configuration.Password}", ParameterType.RequestBody);
             IRestResponse response = client.Execute(request);
             return response.Content;
         }
